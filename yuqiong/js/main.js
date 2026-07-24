@@ -273,44 +273,11 @@
     .then(function (data) { renderGallery(data.items || data); })
     .catch(function () { renderGallery([]); });
 
-  /* ── Bilibili videos (data/videos.json) ── */
-  var videoModal = document.getElementById('video-modal');
-  var videoIframe = document.getElementById('video-iframe');
-
-  function extractBvid(url) {
+  /* ── Bilibili videos (data/videos.json) — external card links ── */
+  function cleanBilibiliUrl(url) {
     if (!url) return '';
     var m = String(url).match(/BV[\w]+/i);
-    return m ? m[0] : '';
-  }
-
-  function openVideoModal(bvid) {
-    if (!videoModal || !videoIframe || !bvid) return;
-    videoIframe.src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) +
-      '&page=1&high_quality=1&danmaku=0&autoplay=1';
-    videoModal.hidden = false;
-    videoModal.setAttribute('aria-hidden', 'false');
-    requestAnimationFrame(function () { videoModal.classList.add('is-open'); });
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeVideoModal() {
-    if (!videoModal) return;
-    videoModal.classList.remove('is-open');
-    videoModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    setTimeout(function () {
-      if (!videoModal.classList.contains('is-open')) {
-        videoModal.hidden = true;
-        videoIframe.src = '';
-      }
-    }, 280);
-  }
-
-  if (videoModal) {
-    videoModal.querySelector('.lightbox-close').addEventListener('click', closeVideoModal);
-    videoModal.addEventListener('click', function (e) {
-      if (e.target === videoModal) closeVideoModal();
-    });
+    return m ? 'https://www.bilibili.com/video/' + m[0] : String(url).split('?')[0];
   }
 
   function renderVideos(list) {
@@ -319,7 +286,7 @@
     if (!root) return;
     root.innerHTML = '';
 
-    var videos = (list || []).filter(function (v) { return v && v.url && extractBvid(v.url); });
+    var videos = (list || []).filter(function (v) { return v && v.url; });
     if (!videos.length) {
       if (empty) empty.hidden = false;
       return;
@@ -327,10 +294,12 @@
     if (empty) empty.hidden = true;
 
     videos.forEach(function (v, i) {
-      var bvid = extractBvid(v.url);
-      var card = document.createElement('button');
-      card.type = 'button';
+      var href = cleanBilibiliUrl(v.url);
+      var card = document.createElement('a');
       card.className = 'video-card tilt-card';
+      card.href = href;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
 
       var thumb = document.createElement('div');
       thumb.className = 'video-thumb';
@@ -351,14 +320,12 @@
 
       var body = document.createElement('div');
       body.className = 'video-body';
-      body.innerHTML =
-        '<h3></h3><p></p><span class="video-link">播放 →</span>';
-      body.querySelector('h3').textContent = v.title || bvid;
+      body.innerHTML = '<h3></h3><p></p><span class="video-link">在 B 站观看 →</span>';
+      body.querySelector('h3').textContent = v.title || href;
       body.querySelector('p').textContent = v.desc || '';
 
       card.appendChild(thumb);
       card.appendChild(body);
-      card.addEventListener('click', function () { openVideoModal(bvid); });
       root.appendChild(card);
 
       if (!isTouch && !prefersReduced) {
@@ -381,10 +348,7 @@
     .catch(function () { renderVideos([]); });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      closeLightbox();
-      closeVideoModal();
-    }
+    if (e.key === 'Escape') closeLightbox();
     if (lightbox && lightbox.classList.contains('is-open')) {
       if (e.key === 'ArrowLeft') openLightbox(lightboxIndex - 1);
       if (e.key === 'ArrowRight') openLightbox(lightboxIndex + 1);

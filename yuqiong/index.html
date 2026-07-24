@@ -164,7 +164,7 @@
         <h2>视频作品</h2>
         <p>Bilibili</p>
       </div>
-      <p class="works-tip" data-reveal>在 <code>data/videos.json</code> 中填写 B 站链接即可自动嵌入</p>
+      <p class="works-tip" data-reveal>点击卡片将在新标签页打开 B 站观看</p>
       <div class="video-grid" id="video-grid" data-reveal aria-label="B站视频列表"></div>
       <p class="gallery-empty" id="videos-empty" hidden>暂无视频。请在 <code>yuqiong/data/videos.json</code> 中添加 B 站链接。</p>
     </section>
@@ -295,13 +295,6 @@
       <figcaption id="lightbox-caption"></figcaption>
     </figure>
     <button class="lightbox-nav lightbox-next" type="button" aria-label="下一张">›</button>
-  </div>
-
-  <div class="video-modal" id="video-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="视频播放">
-    <button class="lightbox-close" type="button" aria-label="关闭">×</button>
-    <div class="video-modal-frame">
-      <iframe id="video-iframe" src="" title="Bilibili 播放器" allowfullscreen allow="fullscreen; picture-in-picture"></iframe>
-    </div>
   </div>
 
   <script src="js/main.js"></script>
