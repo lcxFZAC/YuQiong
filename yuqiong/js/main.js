@@ -213,20 +213,19 @@
     });
   }
 
+  function revealEl(el) {
+    if (!el) return;
+    el.classList.add('is-visible');
+  }
+
   function renderGallery(items) {
     var root = document.getElementById('gallery-masonry');
-    var empty = document.getElementById('gallery-empty');
     if (!root) return;
 
     galleryItems = [];
     root.innerHTML = '';
 
     var valid = (items || []).filter(function (it) { return it && it.file; });
-    if (!valid.length) {
-      if (empty) empty.hidden = false;
-      return;
-    }
-    if (empty) empty.hidden = true;
 
     valid.forEach(function (it, i) {
       var src = 'img/works/' + it.file;
@@ -237,6 +236,8 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'masonry-item';
+      btn.style.setProperty('--delay', String(Math.min(i, 6)));
+      btn.setAttribute('data-reveal', '');
       btn.setAttribute('aria-label', '查看：' + (title || it.file));
 
       var img = document.createElement('img');
@@ -246,7 +247,6 @@
       img.onerror = function () {
         btn.remove();
         galleryItems[i] = null;
-        if (!root.children.length && empty) empty.hidden = false;
       };
 
       btn.appendChild(img);
@@ -263,15 +263,12 @@
       });
 
       root.appendChild(btn);
+      revealObs.observe(btn);
     });
 
+    revealEl(root);
     if (window.__bindCursorHover) window.__bindCursorHover(root);
   }
-
-  fetch('data/gallery.json')
-    .then(function (r) { return r.ok ? r.json() : { items: [] }; })
-    .then(function (data) { renderGallery(data.items || data); })
-    .catch(function () { renderGallery([]); });
 
   /* ── Bilibili videos (data/videos.json) — external card links ── */
   function cleanBilibiliUrl(url) {
@@ -280,18 +277,21 @@
     return m ? 'https://www.bilibili.com/video/' + m[0] : String(url).split('?')[0];
   }
 
+  var FALLBACK_VIDEOS = [
+    { title: '没让每一次微笑，都自信绽放', desc: '大广赛省级一等奖', url: 'https://www.bilibili.com/video/BV1rXga6pELA' },
+    { title: '大宇', desc: '纪录片作品', url: 'https://www.bilibili.com/video/BV1HXga6WELy' },
+    { title: '念', desc: 'AI 视频作品', url: 'https://www.bilibili.com/video/BV1wXga6WEjv' },
+    { title: '用非遗讲文物 · 第一期', desc: '系列作品', url: 'https://www.bilibili.com/video/BV1kXga6WETB' },
+    { title: '用非遗讲文物 · 第三期', desc: '系列作品', url: 'https://www.bilibili.com/video/BV1rXga6pE67' }
+  ];
+
   function renderVideos(list) {
     var root = document.getElementById('video-grid');
-    var empty = document.getElementById('videos-empty');
     if (!root) return;
     root.innerHTML = '';
 
     var videos = (list || []).filter(function (v) { return v && v.url; });
-    if (!videos.length) {
-      if (empty) empty.hidden = false;
-      return;
-    }
-    if (empty) empty.hidden = true;
+    if (!videos.length) videos = FALLBACK_VIDEOS;
 
     videos.forEach(function (v, i) {
       var href = cleanBilibiliUrl(v.url);
@@ -300,6 +300,8 @@
       card.href = href;
       card.target = '_blank';
       card.rel = 'noopener noreferrer';
+      card.setAttribute('data-reveal', '');
+      card.style.setProperty('--delay', String(Math.min(i, 6)));
 
       var thumb = document.createElement('div');
       thumb.className = 'video-thumb';
@@ -327,6 +329,7 @@
       card.appendChild(thumb);
       card.appendChild(body);
       root.appendChild(card);
+      revealObs.observe(card);
 
       if (!isTouch && !prefersReduced) {
         card.addEventListener('mousemove', function (e) {
@@ -339,13 +342,19 @@
       }
     });
 
+    revealEl(root);
     if (window.__bindCursorHover) window.__bindCursorHover(root);
   }
 
+  fetch('data/gallery.json')
+    .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+    .then(function (data) { renderGallery(data.items || data); })
+    .catch(function () { renderGallery([]); });
+
   fetch('data/videos.json')
-    .then(function (r) { return r.ok ? r.json() : { videos: [] }; })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
     .then(function (data) { renderVideos(data.videos || data); })
-    .catch(function () { renderVideos([]); });
+    .catch(function () { renderVideos(FALLBACK_VIDEOS); });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeLightbox();
