@@ -826,16 +826,20 @@ body.is-touch .video-card { cursor: pointer; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  transition: transform 0.55s var(--ease);
 }
+.video-card:hover .video-thumb img { transform: scale(1.05); }
 .video-play {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(20, 20, 20, 0.15);
+  background: rgba(20, 20, 20, 0.22);
   transition: background 0.3s;
+  z-index: 1;
 }
-.video-card:hover .video-play { background: rgba(20, 20, 20, 0.28); }
+.video-card:hover .video-play { background: rgba(20, 20, 20, 0.38); }
 .video-play span {
   width: 56px;
   height: 56px;

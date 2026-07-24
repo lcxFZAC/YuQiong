@@ -19,7 +19,7 @@
 | `title` | 是 | 视频标题 |
 | `url` | 是 | 完整 B 站链接（含 BV 号即可） |
 | `desc` | 否 | 副标题 / 说明 |
-| `cover` | 否 | 封面图路径，相对 `yuqiong/`，如 `img/works/cover.jpg` |
+| `cover` | 建议填 | 封面图路径，相对 `yuqiong/`，如 `img/videos/xxx.jpg` |
 
 示例：
 
